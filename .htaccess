@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteBase /jobYaari/
+
+RewriteRule ^blogdetails/([^/]+)/?$ blog.php?slug=$1 [L,QSA]
