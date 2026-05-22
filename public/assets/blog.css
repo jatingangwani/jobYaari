@@ -410,6 +410,22 @@ main {
   color: var(--blue-dark);
 }
 
+.date-filter-list {
+  gap: 7px;
+}
+
+.date-month {
+  margin: 10px 0 2px;
+  color: #8190a4;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.date-choice {
+  padding-left: 14px;
+}
+
 .recent-list {
   display: grid;
   gap: 14px;

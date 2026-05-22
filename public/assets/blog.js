@@ -3,6 +3,7 @@ const state = {
   search: "",
   category: new URLSearchParams(window.location.search).get("category") || "",
   tag: new URLSearchParams(window.location.search).get("tag") || "",
+  date: new URLSearchParams(window.location.search).get("date") || "",
   loading: false,
   hasMore: true,
   timer: null
@@ -26,6 +27,12 @@ function setActiveTag(tagId) {
   });
 }
 
+function setActiveDate(dateValue) {
+  document.querySelectorAll("[data-date]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.date === dateValue);
+  });
+}
+
 function resetAndLoad() {
   state.page = 1;
   state.hasMore = true;
@@ -46,7 +53,8 @@ async function loadBlogs() {
     page: state.page,
     search: state.search,
     category: state.category,
-    tag: state.tag
+    tag: state.tag,
+    date: state.date
   });
 
   try {
@@ -95,16 +103,26 @@ document.querySelectorAll("[data-tag]").forEach((button) => {
   });
 });
 
+document.querySelectorAll("[data-date]").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.date = button.dataset.date;
+    setActiveDate(state.date);
+    resetAndLoad();
+  });
+});
+
 if (clearButton) {
   clearButton.addEventListener("click", () => {
     state.search = "";
     state.category = "";
     state.tag = "";
+    state.date = "";
     if (searchInput) {
       searchInput.value = "";
     }
     setActiveCategory("");
     setActiveTag("");
+    setActiveDate("");
     resetAndLoad();
   });
 }
@@ -118,4 +136,5 @@ window.addEventListener("scroll", () => {
 
 setActiveCategory(state.category);
 setActiveTag(state.tag);
+setActiveDate(state.date);
 loadBlogs();

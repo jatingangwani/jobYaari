@@ -22,6 +22,7 @@ $categories = array();
 $tags = array();
 $featured = null;
 $recentblogs = array();
+$blogdates = array();
 $totalblogs = 0;
 
 $result = $conn->query("SELECT COUNT(*) totalblogs FROM blogs WHERE status='published' OR status='Active'");
@@ -53,6 +54,17 @@ $result = $conn->query("SELECT blogid,title,slug,featured_image,created_at FROM 
 if($result && $result->num_rows > 0){
    while($row = $result->fetch_assoc()){
       $recentblogs[] = $row;
+   }
+}
+
+$result = $conn->query("SELECT DATE(created_at) blogdate,COUNT(*) totalblogs FROM blogs WHERE (status='published' OR status='Active') AND created_at IS NOT NULL GROUP BY DATE(created_at) ORDER BY blogdate DESC");
+if($result && $result->num_rows > 0){
+   while($row = $result->fetch_assoc()){
+      $month = date('F Y', strtotime($row['blogdate']));
+      if(!isset($blogdates[$month])){
+         $blogdates[$month] = array();
+      }
+      $blogdates[$month][] = $row;
    }
 }
 ?>
@@ -103,7 +115,7 @@ if($result && $result->num_rows > 0){
                </div>
                <div class="search-wrap">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.8 18.2a7.4 7.4 0 1 1 5.2-2.2l4 4-1.5 1.5-4-4a7.3 7.3 0 0 1-3.7.7Zm0-2.1a5.3 5.3 0 1 0 0-10.6 5.3 5.3 0 0 0 0 10.6Z"/></svg>
-                  <input type="search" id="blogSearch" placeholder="Search blog title or keyword">
+                  <input type="search" id="blogSearch" placeholder="Search blog title, keyword, or date">
                </div>
             </div>
             <div class="blog-grid" id="blogGrid"></div>
@@ -118,6 +130,22 @@ if($result && $result->num_rows > 0){
                   <button class="filter-choice active" data-category="">All Blogs <span><?php echo clean_output($totalblogs); ?></span></button>
                   <?php foreach($categories as $category){ ?>
                      <button class="filter-choice" data-category="<?php echo clean_output($category['blogcategoryid']); ?>"><?php echo clean_output($category['category']); ?> <span><?php echo clean_output($category['totalblogs']); ?></span></button>
+                  <?php } ?>
+               </div>
+            </div>
+
+            <div class="filter-block">
+               <div class="filter-title">Filter by Date</div>
+               <div class="filter-list date-filter-list" id="dateFilters">
+                  <button class="filter-choice active" data-date="">All Dates <span><?php echo clean_output($totalblogs); ?></span></button>
+                  <?php foreach($blogdates as $month => $dates){ ?>
+                     <div class="date-month"><?php echo clean_output($month); ?></div>
+                     <?php foreach($dates as $blogdate){ ?>
+                        <button class="filter-choice date-choice" data-date="<?php echo clean_output($blogdate['blogdate']); ?>">
+                           <?php echo clean_output(date('d F Y', strtotime($blogdate['blogdate']))); ?>
+                           <span><?php echo clean_output($blogdate['totalblogs']); ?></span>
+                        </button>
+                     <?php } ?>
                   <?php } ?>
                </div>
             </div>

@@ -19,18 +19,53 @@ function get_terms($conn, $blogid, $mastertable, $masterid, $namefield, $linktab
    return $items;
 }
 
+function search_date_value($search){
+   $search = trim($search);
+   if($search==""){
+      return "";
+   }
+
+   $monthnames = 'january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sep|october|oct|november|nov|december|dec';
+   $looksLikeDate = preg_match('/^\d{4}-\d{2}-\d{2}$/', $search) || preg_match('/\b\d{1,2}\b.*\b('.$monthnames.')\b.*\b\d{4}\b/i', $search) || preg_match('/\b\d{1,2}[\/-]\d{1,2}[\/-]\d{4}\b/', $search);
+   if(!$looksLikeDate){
+      return "";
+   }
+
+   $formats = array('j M Y', 'd M Y', 'j F Y', 'd F Y', 'Y-m-d', 'd-m-Y', 'd/m/Y');
+   foreach($formats as $format){
+      $date = DateTime::createFromFormat($format, $search);
+      if($date){
+         return $date->format('Y-m-d');
+      }
+   }
+
+   $timestamp = strtotime($search);
+   if($timestamp !== false && preg_match('/\d/', $search)){
+      return date('Y-m-d', $timestamp);
+   }
+
+   return "";
+}
+
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 $limit = 6;
 $offset = ($page - 1) * $limit;
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $category = isset($_GET['category']) ? intval($_GET['category']) : 0;
 $tag = isset($_GET['tag']) ? intval($_GET['tag']) : 0;
+$datefilter = isset($_GET['date']) ? trim($_GET['date']) : '';
 
 $where = "(b.status='published' OR b.status='Active')";
 
 if($search!=""){
    $searchsafe = mysqli_real_escape_string($conn, $search);
-   $where .= " AND (b.title LIKE '%$searchsafe%' OR b.short_description LIKE '%$searchsafe%' OR b.content LIKE '%$searchsafe%')";
+   $datesearch = search_date_value($search);
+   $datecondition = "";
+   if($datesearch!=""){
+      $datesafe = mysqli_real_escape_string($conn, $datesearch);
+      $datecondition = " OR DATE(b.created_at)='$datesafe'";
+   }
+   $where .= " AND (b.title LIKE '%$searchsafe%' OR b.short_description LIKE '%$searchsafe%' OR b.content LIKE '%$searchsafe%'$datecondition)";
 }
 
 if($category>0){
@@ -39,6 +74,11 @@ if($category>0){
 
 if($tag>0){
    $where .= " AND EXISTS (SELECT 1 FROM blogtaglink btl WHERE btl.blogid=b.blogid AND btl.blogtagid='$tag')";
+}
+
+if($datefilter!="" && preg_match('/^\d{4}-\d{2}-\d{2}$/', $datefilter)){
+   $datefiltersafe = mysqli_real_escape_string($conn, $datefilter);
+   $where .= " AND DATE(b.created_at)='$datefiltersafe'";
 }
 
 $sql = "SELECT b.* FROM blogs b WHERE $where ORDER BY b.created_at DESC, b.blogid DESC LIMIT $limit OFFSET $offset";
