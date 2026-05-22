@@ -14,8 +14,6 @@
       </a>
       <nav class="main-nav" aria-label="Main navigation">
          <a href="index.php">Home</a>
-         <a href="javascript:void(0)">Jobs</a>
-         <a href="javascript:void(0)">Results</a>
          <a class="active" href="contact.php">Contact Us</a>
       </nav>
    </header>

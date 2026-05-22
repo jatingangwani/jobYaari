@@ -103,7 +103,7 @@ include_once('../includes/dbcon.php');
                                         </div>
                                         <div class="xp-user-logo text-center mb-3">
                                     <?php 
-                                       $sql = "SELECT * FROM emplogin WHERE eid='$duser' LIMIT 1";
+                                       $sql = "SELECT * FROM emplogin WHERE eid='$auser' LIMIT 1";
                                        $result = $conn->query($sql);
                                        if($result->num_rows > 0){                  
                                           $row = $result->fetch_assoc();
@@ -111,18 +111,11 @@ include_once('../includes/dbcon.php');
 
                                        if($row['dp']==""){
                                           echo '<img src="../assets/images/user/';
-                                          
                                           echo '12.png';
                                           echo '" class="rounded-circle img-fluid" alt="user-img">';
                                        }else{
-                                            echo '<img src="../assets/images/user/';
-                                            if($row['gender']=="Male"){
-                                            echo '12.png';
-                                            }else if($row['gender']=="Female"){
-                                            echo '11.png';
-                                            }else{
-                                            echo '12.png';
-                                            }
+                                            echo '<img src="../uploads/employee/';
+                                            echo $row['dp'];
                                             echo '" class="rounded-circle img-fluid" alt="user-img">';
                                        }
 
